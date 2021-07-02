@@ -4,25 +4,41 @@ Citizen.CreateThread(function()
     StartESX()
     
     CreateLoop(function()
-        if xPlayer.job.name == "police" then
-            local vehicle = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 4.0, 0, 70)
-            if vehicle ~= 0 then
-                if GetVehicleDoorAngleRatio(vehicle, 5) > 0.4 then
-                    if GetOnHandObject() == 0 then
-                        DeleteMarker("delete_cone")
-                        CreateMarker("get_cone", GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, 'boot')), 2.0, 2.0, "Press [~g~E~w~] to pick up an ~o~object~w~")
-                    else
-                        DeleteMarker("get_cone")
-                        CreateMarker("delete_cone", GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, 'boot')), 2.0, 2.0, "Press [~g~E~w~] to deposit the ~o~object~w~")
+        local founded = false
+
+        for i=1, #Config.Jobs do
+            if xPlayer.job.name == Config.Jobs[i] then
+                founded = true
+
+                local vehicle = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 4.0, 0, 70)
+                if vehicle ~= 0 then
+                    local vehicleModel = GetEntityModel(vehicle)
+
+                    for i=1, #Config.Vehicle do
+                        if vehicleModel == GetHashKey(Config.Vehicle[i]) then
+                            if GetVehicleDoorAngleRatio(vehicle, 5) > 0.4 then
+                                if GetOnHandObject() == 0 then
+                                    DeleteMarker("delete_cone")
+                                    CreateMarker("get_cone", GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, 'boot')), 2.0, 2.0, "Press [~g~E~w~] to pick up an ~o~object~w~")
+                                else
+                                    DeleteMarker("get_cone")
+                                    CreateMarker("delete_cone", GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, 'boot')), 2.0, 2.0, "Press [~g~E~w~] to deposit the ~o~object~w~")
+                                end
+                            else
+                                DeleteMarker("get_cone")
+                            end
+                            
+                            break
+                        end
                     end
                 else
                     DeleteMarker("get_cone")
+                    Citizen.Wait(500)
                 end
-            else
-                DeleteMarker("get_cone")
-                Citizen.Wait(500)
             end
-        else
+        end
+
+        if not founded then
             Citizen.Wait(2000)
         end
     end)
@@ -34,12 +50,10 @@ On("marker", function(id)
         {
             title    = 'Select the object',
             align    = 'top-left',
-            elements = {
-                {label = "Road Cone",	    value = 'prop_roadcone02a'},
-            }
+            elements = Config.Objects
         }, function(data, menu)
             menu.close()
-            TakeObjectOnHand(PlayerPedId(), data.current.value)
+            TakeObjectOnHand(PlayerPedId(), data.current.model)
         end, function(data, menu)
             menu.close()
         end)
