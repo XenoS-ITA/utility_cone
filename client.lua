@@ -10,7 +10,7 @@ Citizen.CreateThread(function()
             if xPlayer.job.name == k then
                 founded = true
 
-                local vehicle = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 4.0, 0, 70)
+                local vehicle = GetClosestVehicle(GetEntityCoords(PlayerPedId()), 4.0, 0, 100703)
                 if vehicle ~= 0 then
                     local vehicleModel = GetEntityModel(vehicle)
 
